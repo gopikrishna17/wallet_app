@@ -13,24 +13,15 @@ import app.exception.WalletException;
 
 public class WalletDaoImpl implements WalletDao {
 
-	// Create collection to store the Wallet information.
 	Map<Integer, Wallet> wallets = new HashMap<Integer, Wallet>();
 
-	// private Connection connection;
 	Connection connection = MySqlUtility.getConnectionToMySql();
 
 	public WalletDaoImpl() {
 
 	}
 
-	public WalletDaoImpl(Connection connection) {
-		this.connection = connection;
-	}
-
 	public Wallet addWallet(Wallet newWallet) throws WalletException, SQLException {
-
-//		 this.wallets.put(newWallet.getId(), newWallet);
-//		 return this.wallets.get(newWallet.getId());
 
 		String sql = "INSERT INTO walletdetails(id,name,amount,password) VALUES(?, ?, ?, ?)";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -42,12 +33,9 @@ public class WalletDaoImpl implements WalletDao {
 		Integer count = preparedStatement.executeUpdate();
 		if (count == 1) {
 			System.out.println("Wallet registered successfully");
-		} else {
-			throw new WalletException("wallet not registered");
 		}
 
-//        System.out.println(connection);		
-		return this.wallets.get(newWallet.getId());
+		return getWalletById(newWallet.getId());
 	}
 
 	public Wallet getWalletById(Integer walletId) throws WalletException, SQLException {
@@ -71,7 +59,6 @@ public class WalletDaoImpl implements WalletDao {
 	}
 
 	public Wallet updateWallet(Integer walletId, Double amount) throws WalletException, SQLException {
-		// return wallets.replace(updateWallet.getId(), updateWallet);
 
 		Wallet existId = getWalletById(walletId);
 		String sqlUpdate = "UPDATE walletdetails SET amount = " + amount + "WHERE id = " + walletId;
@@ -90,9 +77,6 @@ public class WalletDaoImpl implements WalletDao {
 
 		return deletedWallet;
 
-		// Wallet walletDelete = this.getWalletById(walletID);
-		// wallets.remove(walletID);
-//		return wallet;
 	}
 
 }

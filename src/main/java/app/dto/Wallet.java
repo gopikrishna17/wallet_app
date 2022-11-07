@@ -49,10 +49,10 @@ public class Wallet {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
-	@Override
-	public String toString() {
-		return "Wallet [id=" + id + ", name=" + name + ", balance=" + balance + ", password=" + password + "]";
-	}
+	
+//	@Override
+//	public String toString() {
+//		return "Wallet [id=" + id + ", name=" + name + ", balance=" + balance + ", password=" + password + "]";
+//	}
 
 }

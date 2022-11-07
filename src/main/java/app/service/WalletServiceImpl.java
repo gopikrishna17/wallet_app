@@ -10,8 +10,6 @@ import app.exception.WalletException;
 public class WalletServiceImpl implements WalletService {
 
 	private WalletDao walletRepository = new WalletDaoImpl();
-//	Connection connection = MySqlUtility.getConnectionToMySql();
-//	WalletDaoImpl walletDaoImpl = new WalletDaoImpl(connection);
 
 	public Wallet registerWallet(Wallet newWallet) throws WalletException, SQLException {
 
@@ -34,9 +32,15 @@ public class WalletServiceImpl implements WalletService {
 	}
 
 	public Double addFundsToWallet(Integer walletId, Double amount) throws WalletException, SQLException {
-		Double amountToBeUpdated = this.walletRepository.getWalletById(walletId).getBalance() + amount;
-		this.walletRepository.updateWallet(walletId, amountToBeUpdated);
-		return amountToBeUpdated;
+
+		if (amount > 0) {
+			Double amountToBeUpdated = this.walletRepository.getWalletById(walletId).getBalance() + amount;
+			this.walletRepository.updateWallet(walletId, amountToBeUpdated);
+			return amountToBeUpdated;
+		} else {
+			throw new WalletException("Amount should be greater than Rs.0");
+		}
+
 	}
 
 	public Double showWalletBalance(Integer walletId) throws WalletException, SQLException {
@@ -47,31 +51,34 @@ public class WalletServiceImpl implements WalletService {
 	public Boolean fundTransfer(Integer fromId, Integer toId, Double amount) throws WalletException, SQLException {
 		Wallet fromWallet = this.walletRepository.getWalletById(fromId);
 		Wallet toWallet = this.walletRepository.getWalletById(toId);
+		if (amount > 0.0) {
+			if (toWallet != null) {
+				Double fromBalance = fromWallet.getBalance();
+				Double toBalance = toWallet.getBalance();
 
-		if (fromWallet != null && toWallet != null) {
-			Double fromBalance = fromWallet.getBalance();
-			Double toBalance = toWallet.getBalance();
+				if (fromBalance > amount) {
+					this.walletRepository.updateWallet(fromWallet.getId(), fromBalance - amount);
+					this.walletRepository.updateWallet(toWallet.getId(), toBalance + amount);
+					return true;
+				} else {
+					throw new WalletException("Insufficient Balance");
+				}
 
-			if (fromBalance > amount) {
-				this.walletRepository.updateWallet(fromWallet.getId(), fromBalance - amount);
-				this.walletRepository.updateWallet(toWallet.getId(), toBalance + amount);
-				return true;
 			} else {
-				throw new WalletException("Insufficient Balance");
+				throw new WalletException("Receiver WalletId not found");
 			}
-
-		} else if (toWallet == null) {
-			throw new WalletException("Receiver WalletId not found");
+		} else {
+			throw new WalletException("Amount to be transferred should be greater than Rs.0");
 		}
-		return false;
+
 	}
 
 	public Wallet unRegisterWallet(Integer walletId, String password) throws WalletException, SQLException {
 		Wallet walletToBeDeleted = this.walletRepository.getWalletById(walletId);
-		if (walletToBeDeleted != null && walletToBeDeleted.getPassword().equals(password)) {
+		if (walletToBeDeleted.getPassword().equals(password)) {
 			return this.walletRepository.deleteWalletById(walletId);
 		} else {
-			return null;
+			throw new WalletException("Password mismatch");
 		}
 	}
 
